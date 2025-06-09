@@ -1,0 +1,6 @@
+# Example variables file for ARGUS Terraform deployment
+location             = "westeurope"
+resource_group_name  = "argus-rg"
+azure_principal_id   = "<your-azure-ad-object-id>"
+functionapp_docker_image = "DOCKER|argus.azurecr.io/argus-backend:latest"
+# Add other variables as needed for OpenAI, Document Intelligence, etc.

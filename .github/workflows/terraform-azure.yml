@@ -1,0 +1,77 @@
+# This workflow automates Terraform deployment to Azure using GitHub Actions.
+# It uses OIDC for secure authentication and runs on every push or PR to main.
+# Required secrets: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_KEY, AZURE_OPENAI_MODEL_DEPLOYMENT_NAME, DOCUMENT_INTELLIGENCE_NAME
+# For setup, see: https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Clinux
+
+# GitHub Actions Workflow for Terraform Deployment to Azure
+# This workflow will automatically deploy your infrastructure using Terraform on every push to the main branch.
+
+name: 'Terraform Azure Deployment'
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  terraform:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          enable-AzPSSession: false
+
+      - name: Create terraform.tfvars from secrets
+        run: |
+          echo "location=\"swedencentral\"" > ./infra/terraform.tfvars
+          echo "resource_group_name=\"argus-rg\"" >> ./infra/terraform.tfvars
+          echo "azure_principal_id=\"<your-azure-ad-object-id>\"" >> ./infra/terraform.tfvars
+          echo "functionapp_docker_image=\"DOCKER|argus.azurecr.io/argus-backend:latest\"" >> ./infra/terraform.tfvars
+          echo "azure_openai_endpoint=\"${{ secrets.AZURE_OPENAI_ENDPOINT }}\"" >> ./infra/terraform.tfvars
+          echo "azure_openai_key=\"${{ secrets.AZURE_OPENAI_KEY }}\"" >> ./infra/terraform.tfvars
+          echo "azure_openai_model_deployment_name=\"${{ secrets.AZURE_OPENAI_MODEL_DEPLOYMENT_NAME }}\"" >> ./infra/terraform.tfvars
+          echo "document_intelligence_name=\"${{ secrets.DOCUMENT_INTELLIGENCE_NAME }}\"" >> ./infra/terraform.tfvars
+        shell: bash
+        # You can add more variables as needed
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./infra
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: ./infra
+
+      - name: Terraform Plan
+        run: terraform plan -var-file="terraform.tfvars" -out=tfplan
+        working-directory: ./infra
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve tfplan
+        working-directory: ./infra
+
+      - name: Terraform Output
+        run: terraform output
+        working-directory: ./infra
