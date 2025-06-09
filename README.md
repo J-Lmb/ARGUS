@@ -1,3 +1,5 @@
+[![.github/workflows/terraform-azure.yml](https://github.com/J-Lmb/ARGUS/actions/workflows/terraform-azure.yml/badge.svg)](https://github.com/J-Lmb/ARGUS/actions/workflows/terraform-azure.yml)
+
 # ARGUS: Automated Retrieval and GPT Understanding System
 ### 
 
