@@ -1,7 +1,7 @@
 # Example variables file for ARGUS Terraform deployment
 location             = "swedencentral"
 resource_group_name  = "argus-rg"
-azure_principal_id   = "<your-azure-ad-object-id>"
+azure_principal_id   = "743bf844-1b8d-4d6e-a512-693e27390630"
 functionapp_docker_image = "DOCKER|argus.azurecr.io/argus-backend:latest"
 
 # Azure AI resource configuration parameters
