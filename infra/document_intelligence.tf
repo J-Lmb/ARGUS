@@ -8,7 +8,6 @@ resource "azurerm_cognitive_account" "document_intelligence" {
   tags = {
     solution = "ARGUS-1.0"
   }
-  properties = {}
   custom_subdomain_name = "di${random_string.unique.result}"
   public_network_access_enabled = true
 }

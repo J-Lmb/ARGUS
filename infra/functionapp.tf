@@ -5,7 +5,7 @@ variable "functionapp_docker_image" {
   default     = "DOCKER|argus.azurecr.io/argus-backend:latest"
 }
 
-resource "azurerm_app_service_plan" "main" {
+resource "azurerm_service_plan" "main" {
   name                = "${azurerm_resource_group.main.name}-plan"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -24,7 +24,7 @@ resource "azurerm_linux_function_app" "main" {
   name                       = "fa${random_string.unique.result}"
   location                   = azurerm_resource_group.main.location
   resource_group_name        = azurerm_resource_group.main.name
-  service_plan_id            = azurerm_app_service_plan.main.id
+  service_plan_id            = azurerm_service_plan.main.id
   storage_account_name       = azurerm_storage_account.main.name
   storage_account_access_key = azurerm_storage_account.main.primary_access_key
   app_settings = {
@@ -57,3 +57,6 @@ resource "azurerm_linux_function_app" "main" {
     solution = "ARGUS-1.0"
   }
 }
+
+# Optionally, migrate from 'azurerm_app_service_plan' to 'azurerm_service_plan' as recommended by the provider.
+# If you want to keep the old resource for now, add a comment about deprecation.
